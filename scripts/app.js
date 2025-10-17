@@ -478,13 +478,13 @@ window.depositFromPopup = function(amount) {
                 }
                 
                 setTimeout(() => {
-                    alert('¡Correcto! 🎉');
+                    alert('Correct! 🎉');
                 }, 300);
             } else {
                 element.classList.add('incorrect');
                 options[correct].classList.add('correct');
                 setTimeout(() => {
-                    alert('Incorrecto. Revisa la lección nuevamente.');
+                    alert('Incorrect. Review the lesson and try again. ');
                 }, 300);
             }
         }
@@ -512,6 +512,268 @@ window.depositFromPopup = function(amount) {
             
             updateBalance();
         }, 5000);
+
+// Settings functionality
+let marketUpdateInterval;
+let volatilityMultiplier = 1;
+
+function switchScreen(screen) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    
+    if (screen === 'home') {
+        document.getElementById('homeScreen').classList.add('active');
+        document.querySelectorAll('.nav-item')[0].classList.add('active');
+        state.currentScreen = 'home';
+        renderStocks();
+    } else if (screen === 'portfolio') {
+        document.getElementById('portfolioScreen').classList.add('active');
+        document.querySelectorAll('.nav-item')[1].classList.add('active');
+        state.currentScreen = 'portfolio';
+        renderPortfolio();
+    } else if (screen === 'tutorials') {
+        document.getElementById('tutorialsScreen').classList.add('active');
+        document.querySelectorAll('.nav-item')[2].classList.add('active');
+        state.currentScreen = 'tutorials';
+        renderTutorials();
+    } else if (screen === 'settings') {
+        document.getElementById('settingsScreen').classList.add('active');
+        document.querySelectorAll('.nav-item')[3].classList.add('active');
+        state.currentScreen = 'settings';
+    }
+}
+
+// Actualiza el botón de settings en el nav
+// Cambia: onclick="alert('Settings - Coming soon')"
+// Por: onclick="switchScreen('settings')"
+
+function showEditProfile() {
+    const modal = document.getElementById('settingsModal');
+    document.getElementById('settingsModalTitle').textContent = 'Edit Profile';
+    document.getElementById('settingsModalContent').innerHTML = `
+        <div class="settings-modal-section">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Display Name</label>
+            <input type="text" class="settings-modal-input" id="profileName" value="Investor" placeholder="Enter your name">
+        </div>
+        <div class="settings-modal-section">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Avatar Letter</label>
+            <input type="text" class="settings-modal-input" id="profileAvatar" maxlength="1" value="S" placeholder="S">
+        </div>
+        <button class="settings-modal-btn" onclick="saveProfile()">Save Changes</button>
+    `;
+    modal.classList.add('active');
+}
+
+function saveProfile() {
+    const name = document.getElementById('profileName').value || 'Investor';
+    const avatar = document.getElementById('profileAvatar').value.toUpperCase() || 'S';
+    document.querySelector('.profile-icon').textContent = avatar;
+    closeSettingsModal();
+    showPurchasePopup('Profile updated successfully! ✨');
+}
+
+function showLanguageSelector() {
+    const modal = document.getElementById('settingsModal');
+    document.getElementById('settingsModalTitle').textContent = 'Select Language';
+    document.getElementById('settingsModalContent').innerHTML = `
+        <div class="settings-option-list">
+            <div class="settings-option-item selected" onclick="selectLanguage('English', this)">
+                🇬🇧 English
+            </div>
+            <div class="settings-option-item" onclick="selectLanguage('Español', this)">
+                🇪🇸 Español
+            </div>
+            <div class="settings-option-item" onclick="selectLanguage('Français', this)">
+                🇫🇷 Français
+            </div>
+            <div class="settings-option-item" onclick="selectLanguage('Deutsch', this)">
+                🇩🇪 Deutsch
+            </div>
+        </div>
+    `;
+    modal.classList.add('active');
+}
+
+function selectLanguage(language, element) {
+    document.querySelectorAll('.settings-option-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    document.getElementById('currentLanguage').textContent = language;
+    setTimeout(() => {
+        closeSettingsModal();
+        showPurchasePopup(`Language changed to ${language}! 🌍`);
+    }, 300);
+}
+
+function showResetPortfolio() {
+    const modal = document.getElementById('settingsModal');
+    document.getElementById('settingsModalTitle').textContent = 'Reset Portfolio';
+    document.getElementById('settingsModalContent').innerHTML = `
+        <div style="text-align: center; padding: 20px 0;">
+            <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
+            <p style="font-size: 18px; margin-bottom: 12px;">Are you sure?</p>
+            <p style="color: #888; line-height: 1.6;">
+                This will reset your portfolio to €10,000 and remove all your current investments. 
+                This action cannot be undone.
+            </p>
+        </div>
+        <button class="settings-modal-btn danger" onclick="confirmReset()">Yes, Reset Portfolio</button>
+        <button class="settings-modal-btn secondary" onclick="closeSettingsModal()" style="background: rgba(255,255,255,0.1); margin-top: 12px;">Cancel</button>
+    `;
+    modal.classList.add('active');
+}
+
+function confirmReset() {
+    state.cash = 10000;
+    state.portfolio = {};
+    updateBalance();
+    closeSettingsModal();
+    showPurchasePopup('Portfolio reset successfully! 🔄');
+}
+
+function toggleAnimations() {
+    const toggle = document.getElementById('animationsToggle');
+    if (toggle.checked) {
+        document.body.style.setProperty('--animation-speed', '0.3s');
+    } else {
+        document.body.style.setProperty('--animation-speed', '0s');
+    }
+}
+
+function toggleRealtime() {
+    const toggle = document.getElementById('realtimeToggle');
+    if (toggle.checked) {
+        startMarketUpdates();
+    } else {
+        stopMarketUpdates();
+    }
+}
+
+function startMarketUpdates() {
+    if (marketUpdateInterval) clearInterval(marketUpdateInterval);
+    marketUpdateInterval = setInterval(() => {
+        stocks.forEach(stock => {
+            const changePercent = (Math.random() - 0.5) * 2 * volatilityMultiplier;
+            stock.price *= (1 + changePercent / 100);
+            stock.change = changePercent;
+        });
+        
+        if (state.currentScreen === 'home') {
+            renderStocks(document.getElementById('searchInput').value);
+        } else if (state.currentScreen === 'portfolio') {
+            renderPortfolio();
+        }
+        
+        updateBalance();
+    }, 5000);
+}
+
+function stopMarketUpdates() {
+    if (marketUpdateInterval) {
+        clearInterval(marketUpdateInterval);
+        marketUpdateInterval = null;
+    }
+}
+
+function showVolatilitySettings() {
+    const modal = document.getElementById('settingsModal');
+    document.getElementById('settingsModalTitle').textContent = 'Market Volatility';
+    const levels = {
+        'Low': 0.5,
+        'Normal': 1,
+        'High': 2,
+        'Extreme': 3
+    };
+    const current = Object.keys(levels).find(key => levels[key] === volatilityMultiplier) || 'Normal';
+    
+    document.getElementById('settingsModalContent').innerHTML = `
+        <div style="padding: 16px 0; color: #ccc; line-height: 1.6; margin-bottom: 16px;">
+            Control how quickly stock prices change. Higher volatility means more dramatic price movements.
+        </div>
+        <div class="settings-option-list">
+            ${Object.keys(levels).map(level => `
+                <div class="settings-option-item ${current === level ? 'selected' : ''}" onclick="selectVolatility('${level}', ${levels[level]}, this)">
+                    ${level} ${level === 'Low' ? '🐌' : level === 'Normal' ? '🚶' : level === 'High' ? '🏃' : '🚀'}
+                </div>
+            `).join('')}
+        </div>
+    `;
+    modal.classList.add('active');
+}
+
+function selectVolatility(level, multiplier, element) {
+    document.querySelectorAll('.settings-option-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    volatilityMultiplier = multiplier;
+    document.getElementById('volatilityLevel').textContent = level;
+    setTimeout(() => {
+        closeSettingsModal();
+        showPurchasePopup(`Volatility set to ${level}! 📊`);
+    }, 300);r
+}
+
+function showAbout() {
+    const modal = document.getElementById('settingsModal');
+    document.getElementById('settingsModalTitle').textContent = 'About Your Invest';
+    document.getElementById('settingsModalContent').innerHTML = `
+        <div style="text-align: center; padding: 20px 0;">
+            <div style="font-size: 72px; margin-bottom: 16px;">💼</div>
+            <h3 style="font-size: 24px; margin-bottom: 8px;">Your Invest</h3>
+            <p style="color: #888; margin-bottom: 24px;">Version 1.0.0</p>
+            <p style="color: #ccc; line-height: 1.8; text-align: left;">
+                Your Invest is a comprehensive investment simulation platform designed to help you learn about stock trading, 
+                portfolio management, and financial markets in a risk-free environment.
+            </p>
+            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p style="color: #888; font-size: 14px;">
+                    Built with ❤️ for educational purposes
+                </p>
+            </div>
+        </div>
+        <button class="settings-modal-btn" onclick="closeSettingsModal()">Close</button>
+    `;
+    modal.classList.add('active');
+}
+
+function showHelp() {
+    const modal = document.getElementById('settingsModal');
+    document.getElementById('settingsModalTitle').textContent = 'Help & Support';
+    document.getElementById('settingsModalContent').innerHTML = `
+        <div style="padding: 16px 0;">
+            <div style="margin-bottom: 24px;">
+                <h4 style="font-size: 16px; margin-bottom: 12px; color: #3b82f6;">📚 Getting Started</h4>
+                <p style="color: #ccc; line-height: 1.6; font-size: 14px;">
+                    Start by exploring the Market tab to see available stocks. Click on any stock to buy shares. 
+                    Visit the Academy to learn investment strategies.
+                </p>
+            </div>
+            <div style="margin-bottom: 24px;">
+                <h4 style="font-size: 16px; margin-bottom: 12px; color: #3b82f6;">💼 Portfolio Management</h4>
+                <p style="color: #ccc; line-height: 1.6; font-size: 14px;">
+                    Track your investments in the Portfolio tab. Monitor profits/losses in real-time and make informed decisions.
+                </p>
+            </div>
+            <div style="margin-bottom: 24px;">
+                <h4 style="font-size: 16px; margin-bottom: 12px; color: #3b82f6;">🎓 Learning Resources</h4>
+                <p style="color: #ccc; line-height: 1.6; font-size: 14px;">
+                    Access comprehensive tutorials in the Academy section. Complete quizzes to test your knowledge.
+                </p>
+            </div>
+        </div>
+        <button class="settings-modal-btn" onclick="closeSettingsModal()">Got it!</button>
+    `;
+    modal.classList.add('active');
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').classList.remove('active');
+}
+
+// Initialize market updates on load
+startMarketUpdates();
 
         // Inicializar
         renderStocks();

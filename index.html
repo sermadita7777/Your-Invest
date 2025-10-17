@@ -17,7 +17,7 @@
             <path class="body" d="M15 35 H75" />
         </svg>
     </div>
-    <div class="app-container">
+    <div class="app-container"> 
         <!-- Fondo animado: gradiente y partículas -->
         <canvas id="bg-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;border-radius:0;" tabindex="-1"></canvas>
         <header class="header" style="position:relative;overflow:hidden;">
@@ -123,13 +123,199 @@
                 <div class="nav-icon">🎓</div>
                 <div class="nav-label">Academy</div>
             </div>
-            <div class="nav-item" onclick="alert('Settings - Coming soon')">
+            <div class="nav-item" onclick="switchScreen('settings')">
                 <div class="nav-icon">⚙️</div>
                 <div class="nav-label">Settings</div>
             </div>
         </nav>
+    
+    <!-- Settings Screen  -->
+    <div id="settingsScreen" class="screen">
+        <div class="section-title">Settings</div>
+        
+        <div class="settings-section">
+            <div class="settings-category">
+                <div class="settings-category-title">👤 Account</div>
+                <div class="settings-item" onclick="showEditProfile()">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">✏️</div>
+                        <div>
+                            <div class="settings-item-title">Edit Profile</div>
+                            <div class="settings-item-subtitle">Change your name and avatar</div>
+                        </div>
+                    </div>
+                    <div class="settings-item-arrow">›</div>
+                </div>
+                <div class="settings-item" onclick="showLanguageSelector()">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">🌍</div>
+                        <div>
+                            <div class="settings-item-title">Language</div>
+                            <div class="settings-item-subtitle" id="currentLanguage">English</div>
+                        </div>
+                    </div>
+                    <div class="settings-item-arrow">›</div>
+                </div>
+            </div>
+
+            <div class="settings-category">
+                <div class="settings-category-title">💰 Portfolio</div>
+                <div class="settings-item" onclick="showResetPortfolio()">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">🔄</div>
+                        <div>
+                            <div class="settings-item-title">Reset Portfolio</div>
+                            <div class="settings-item-subtitle">Start fresh with €10,000</div>
+                        </div>
+                    </div>
+                    <div class="settings-item-arrow">›</div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">💵</div>
+                        <div>
+                            <div class="settings-item-title">Initial Capital</div>
+                            <div class="settings-item-subtitle">Your starting balance</div>
+                        </div>
+                    </div>
+                    <div class="settings-toggle">
+                        <span id="initialCapital">€10,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-category">
+                <div class="settings-category-title">🎨 Appearance</div>
+                <div class="settings-item">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">🌙</div>
+                        <div>
+                            <div class="settings-item-title">Dark Mode</div>
+                            <div class="settings-item-subtitle">Always enabled</div>
+                        </div>
+                    </div>
+                    <div class="settings-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item" onclick="toggleAnimations()">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">✨</div>
+                        <div>
+                            <div class="settings-item-title">Animations</div>
+                            <div class="settings-item-subtitle">Enable smooth transitions</div>
+                        </div>
+                    </div>
+                    <div class="settings-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="animationsToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-category">
+                <div class="settings-category-title">📊 Market Data</div>
+                <div class="settings-item">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">⚡</div>
+                        <div>
+                            <div class="settings-item-title">Real-time Updates</div>
+                            <div class="settings-item-subtitle">Update every 5 seconds</div>
+                        </div>
+                    </div>
+                    <div class="settings-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="realtimeToggle" checked onchange="toggleRealtime()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item" onclick="showVolatilitySettings()">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">📈</div>
+                        <div>
+                            <div class="settings-item-title">Market Volatility</div>
+                            <div class="settings-item-subtitle" id="volatilityLevel">Normal</div>
+                        </div>
+                    </div>
+                    <div class="settings-item-arrow">›</div>
+                </div>
+            </div>
+
+            <div class="settings-category">
+                <div class="settings-category-title">🔔 Notifications</div>
+                <div class="settings-item">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">📢</div>
+                        <div>
+                            <div class="settings-item-title">Price Alerts</div>
+                            <div class="settings-item-subtitle">Get notified of big moves</div>
+                        </div>
+                    </div>
+                    <div class="settings-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="alertsToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">🎉</div>
+                        <div>
+                            <div class="settings-item-title">Success Confetti</div>
+                            <div class="settings-item-subtitle">Celebrate your trades</div>
+                        </div>
+                    </div>
+                    <div class="settings-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="confettiToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-category">
+                <div class="settings-category-title">ℹ️ About</div>
+                <div class="settings-item" onclick="showAbout()">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">📱</div>
+                        <div>
+                            <div class="settings-item-title">About Your Invest</div>
+                            <div class="settings-item-subtitle">Version 1.0.0</div>
+                        </div>
+                    </div>
+                    <div class="settings-item-arrow">›</div>
+                </div>
+                <div class="settings-item" onclick="showHelp()">
+                    <div class="settings-item-left">
+                        <div class="settings-item-icon">❓</div>
+                        <div>
+                            <div class="settings-item-title">Help & Support</div>
+                            <div class="settings-item-subtitle">Get assistance</div>
+                        </div>
+                    </div>
+                    <div class="settings-item-arrow">›</div>
+                </div>
+            </div>
+
+            <div class="settings-footer">
+                <p>Made with 💙 by Your Invest Team</p>
+                <p style="font-size: 12px; color: #666; margin-top: 8px;">
+                    This is a simulation for educational purposes only.
+                </p>
+            </div>
+        </div>
     </div>
 
+    </div>
+    
     <!-- Trade Modal -->
     <div id="tradeModal" class="modal">
         <div class="modal-content">
@@ -154,6 +340,18 @@
         <div class="tutorial-content">
             <div class="tutorial-close" onclick="closeTutorial()">←</div>
             <div id="tutorialLessons"></div>
+        </div>
+    </div>
+
+
+    <!-- Settings Modals -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="settingsModalTitle">Settings</div>
+                <div class="close-btn" onclick="closeSettingsModal()">&times;</div>
+            </div>
+            <div id="settingsModalContent"></div>
         </div>
     </div>
 

@@ -664,3 +664,223 @@
             font-size: 64px;
             margin-bottom: 20px;
         }
+
+        /* Settings Screen Styles */
+.settings-section {
+    padding: 0 20px 100px;
+}
+
+.settings-category {
+    margin-bottom: 32px;
+}
+
+.settings-category-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #3b82f6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    padding-left: 4px;
+}
+
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-item:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(59,130,246,0.3);
+    transform: translateX(4px);
+}
+
+.settings-item-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+}
+
+.settings-item-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(37,99,235,0.2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.settings-item-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.settings-item-subtitle {
+    font-size: 13px;
+    color: #888;
+}
+
+.settings-item-arrow {
+    font-size: 24px;
+    color: #666;
+    font-weight: 300;
+}
+
+.settings-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255,255,255,0.1);
+    transition: 0.3s;
+    border-radius: 26px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 3px;
+    background-color: #fff;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-color: #3b82f6;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.toggle-switch input:disabled + .toggle-slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.settings-footer {
+    text-align: center;
+    padding: 32px 20px;
+    color: #888;
+    font-size: 14px;
+}
+
+/* Settings Modal Content Styles */
+.settings-modal-section {
+    margin-bottom: 24px;
+}
+
+.settings-modal-input {
+    width: 100%;
+    padding: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    margin-top: 8px;
+    outline: none;
+}
+
+.settings-modal-input:focus {
+    border-color: #3b82f6;
+    background: rgba(255,255,255,0.08);
+}
+
+.settings-modal-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all 0.3s ease;
+}
+
+.settings-modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59,130,246,0.4);
+}
+
+.settings-modal-btn.danger {
+    background: linear-gradient(135deg, #ff4466 0%, #cc3355 100%);
+}
+
+.settings-modal-btn.danger:hover {
+    box-shadow: 0 8px 20px rgba(255,68,102,0.4);
+}
+
+.settings-option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.settings-option-item {
+    padding: 16px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    font-weight: 600;
+}
+
+.settings-option-item:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: #3b82f6;
+}
+
+.settings-option-item.selected {
+    background: rgba(59,130,246,0.2);
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
