@@ -10,6 +10,7 @@ window.depositFromPopup = function(amount) {
             portfolio: {},
             currentScreen: 'home',
             currentTradeStock: null,
+            currentHolding: null,
             tutorials: {
                 basics: { completed: 0, total: 3 },
                 stocks: { completed: 0, total: 4 },
@@ -771,6 +772,193 @@ function showHelp() {
 function closeSettingsModal() {
     document.getElementById('settingsModal').classList.remove('active');
 }
+
+// Render portfolio - ACTUALIZAR ESTA FUNCIÓN
+function renderPortfolio() {
+    const portfolioList = document.getElementById('portfolioList');
+    portfolioList.innerHTML = '';
+    
+    const portfolioKeys = Object.keys(state.portfolio);
+    
+    if (portfolioKeys.length === 0) {
+        portfolioList.innerHTML = '<div class="empty-state"><div class="empty-icon">💼</div><div>Your portfolio is empty<br><small>Buy your first stock in the Home section</small></div></div>';
+        return;
+    }
+    
+    portfolioKeys.forEach(symbol => {
+        const holding = state.portfolio[symbol];
+        const stock = stocks.find(s => s.symbol === symbol);
+        const currentValue = holding.shares * stock.price;
+        const profit = currentValue - holding.totalCost;
+        const profitPercent = ((profit / holding.totalCost) * 100).toFixed(2);
+        
+        const portfolioItem = document.createElement('div');
+        portfolioItem.className = 'portfolio-item';
+        portfolioItem.onclick = () => openSellModal(stock, holding);
+        
+        portfolioItem.innerHTML = `
+            <div class="portfolio-left">
+                <div class="portfolio-stock-name">${stock.name}</div>
+                <div class="portfolio-shares">${holding.shares} shares · ${stock.symbol}</div>
+            </div>
+            <div class="portfolio-right">
+                <div class="portfolio-value">€${currentValue.toFixed(2)}</div>
+                <div class="portfolio-profit ${profit >= 0 ? 'stock-change positive' : 'stock-change negative'}">
+                    ${profit >= 0 ? '+' : ''}€${profit.toFixed(2)} (${profit >= 0 ? '+' : ''}${profitPercent}%)
+                </div>
+            </div>
+        `;
+        
+        portfolioList.appendChild(portfolioItem);
+    });
+}
+
+// AÑADIR ESTAS NUEVAS FUNCIONES
+
+// Abrir modal de venta
+function openSellModal(stock, holding) {
+    state.currentTradeStock = stock;
+    state.currentHolding = holding;
+    
+    const currentValue = holding.shares * stock.price;
+    const profit = currentValue - holding.totalCost;
+    const profitPercent = ((profit / holding.totalCost) * 100).toFixed(2);
+    
+    document.getElementById('modalTitle').textContent = 'Sell';
+    document.getElementById('modalStockIcon').textContent = stock.icon;
+    document.getElementById('modalStockName').textContent = stock.name;
+    document.getElementById('modalStockSymbol').textContent = `${stock.symbol} · You own ${holding.shares} shares`;
+    document.getElementById('modalStockPrice').textContent = `€${stock.price.toFixed(2)}`;
+    
+    const quantityInput = document.getElementById('quantityInput');
+    quantityInput.value = holding.shares;
+    quantityInput.max = holding.shares;
+    
+    updateSellTotalValue();
+    
+    // Cambiar el texto del botón
+    const confirmBtn = document.querySelector('.confirm-btn');
+    confirmBtn.textContent = 'Confirm Sale';
+    confirmBtn.style.background = 'linear-gradient(135deg, #ff4466 0%, #cc3355 100%)';
+    confirmBtn.onclick = executeSell;
+    
+    // Añadir información de ganancia/pérdida
+    const modalStockInfo = document.querySelector('.modal-stock-info');
+    const profitInfo = document.createElement('div');
+    profitInfo.id = 'profitInfo';
+    profitInfo.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;';
+    profitInfo.innerHTML = `
+        <div style="font-size: 13px; color: #888; margin-bottom: 6px;">Current Position</div>
+        <div style="font-size: 18px; font-weight: 600; color: ${profit >= 0 ? '#3b82f6' : '#ff4466'};">
+            ${profit >= 0 ? '+' : ''}€${profit.toFixed(2)} (${profit >= 0 ? '+' : ''}${profitPercent}%)
+        </div>
+    `;
+    modalStockInfo.appendChild(profitInfo);
+    
+    document.getElementById('tradeModal').classList.add('active');
+}
+
+// Actualizar el valor total de venta
+function updateSellTotalValue() {
+    const quantity = parseInt(document.getElementById('quantityInput').value) || 0;
+    const total = quantity * state.currentTradeStock.price;
+    const holding = state.currentHolding;
+    
+    // Calcular ganancia/pérdida de la cantidad seleccionada
+    const avgCostPerShare = holding.totalCost / holding.shares;
+    const costOfSelling = avgCostPerShare * quantity;
+    const profitFromSale = total - costOfSelling;
+    const profitPercent = ((profitFromSale / costOfSelling) * 100).toFixed(2);
+    
+    document.getElementById('totalCost').innerHTML = `
+        <div style="margin-bottom: 8px;">You will receive: <strong>€${total.toFixed(2)}</strong></div>
+        <div style="font-size: 13px; color: ${profitFromSale >= 0 ? '#3b82f6' : '#ff4466'};">
+            ${profitFromSale >= 0 ? 'Profit' : 'Loss'}: ${profitFromSale >= 0 ? '+' : ''}€${profitFromSale.toFixed(2)} (${profitFromSale >= 0 ? '+' : ''}${profitPercent}%)
+        </div>
+    `;
+}
+
+// Ejecutar venta
+function executeSell() {
+    const quantity = parseInt(document.getElementById('quantityInput').value);
+    const stock = state.currentTradeStock;
+    const holding = state.currentHolding;
+    const totalSale = quantity * stock.price;
+    
+    if (quantity <= 0) {
+        alert('Please enter a valid quantity');
+        return;
+    }
+    
+    if (quantity > holding.shares) {
+        alert(`You only have ${holding.shares} shares to sell`);
+        return;
+    }
+    
+    // Calcular ganancia/pérdida
+    const avgCostPerShare = holding.totalCost / holding.shares;
+    const costOfSelling = avgCostPerShare * quantity;
+    const profitFromSale = totalSale - costOfSelling;
+    
+    // Actualizar estado
+    state.cash += totalSale;
+    
+    if (quantity === holding.shares) {
+        // Vender todas las acciones - eliminar del portfolio
+        delete state.portfolio[stock.symbol];
+    } else {
+        // Vender parte de las acciones
+        state.portfolio[stock.symbol].shares -= quantity;
+        state.portfolio[stock.symbol].totalCost -= costOfSelling;
+    }
+    
+    updateBalance();
+    closeModal();
+    
+    const profitMsg = profitFromSale >= 0 
+        ? `with a profit of €${profitFromSale.toFixed(2)}! 💰` 
+        : `with a loss of €${Math.abs(profitFromSale).toFixed(2)} 📉`;
+    
+    showPurchasePopup(`You sold ${quantity} shares of ${stock.name} (${stock.symbol}) ${profitMsg}`);
+    
+    // Si estamos en la pantalla de portfolio, actualizar
+    if (state.currentScreen === 'portfolio') {
+        renderPortfolio();
+    }
+}
+
+// MODIFICAR la función closeModal para restaurar el botón de compra
+function closeModal() {
+    document.getElementById('tradeModal').classList.remove('active');
+    state.currentTradeStock = null;
+    state.currentHolding = null;
+    
+    // Remover información de ganancia si existe
+    const profitInfo = document.getElementById('profitInfo');
+    if (profitInfo) {
+        profitInfo.remove();
+    }
+    
+    // Restaurar el botón a modo compra
+    const confirmBtn = document.querySelector('.confirm-btn');
+    confirmBtn.textContent = 'Confirm Purchase';
+    confirmBtn.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+    confirmBtn.onclick = executeTrade;
+    
+    // Restaurar el input
+    const quantityInput = document.getElementById('quantityInput');
+    quantityInput.removeAttribute('max');
+}
+
+// MODIFICAR el event listener del quantityInput
+document.getElementById('quantityInput').addEventListener('input', function() {
+    if (state.currentHolding) {
+        updateSellTotalValue();
+    } else {
+        updateTotalCost();
+    }
+});
+
 
 // Initialize market updates on load
 startMarketUpdates();
